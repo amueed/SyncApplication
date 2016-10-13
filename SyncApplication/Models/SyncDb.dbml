@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="local_db" Class="SyncDbDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="WebSettings" ConnectionString="Data Source=EMAX-MUEED;Initial Catalog=local_db;Integrated Security=True;Encrypt=False;TrustServerCertificate=True" SettingsObjectName="System.Configuration.ConfigurationManager.ConnectionStrings" SettingsPropertyName="local_dbConnectionString" Provider="System.Data.SqlClient" />
+  <Table Name="dbo.SyncToken" Member="SyncTokens">
+    <Type Name="SyncToken">
+      <Column Name="TokenId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="AccountId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="UserEmail" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="EmailServer" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="TokenType" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="AccessToken" Type="System.String" DbType="NVarChar(2000)" CanBeNull="true" />
+      <Column Name="RefreshToken" Type="System.String" DbType="NVarChar(2000)" CanBeNull="true" />
+      <Column Name="ExpiresIn" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="UpdatedOn" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="ConfigurationDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+    </Type>
+  </Table>
+</Database>
