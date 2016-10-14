@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace SyncApplication.Models.OutlookCalendar
 {
     public class OutlookCalendarBL
     {
-        public static List<CalendarEvent> GetEvents(string UserEmail)
+        public static async Task<List<CalendarEvent>> GetEvents(string UserEmail)
         {
             OAuthToken userToken = GetUserTokenObject(UserEmail);
-            var calendarService = new OutlookCalendarService(string.Format("{0} {1}", userToken.TokenType, userToken.AccessToken));
+            //var token = string.Format("{0} {1}", userToken.TokenType, userToken.AccessToken);
+            string token = userToken.AccessToken;
+            var calendarService = new OutlookCalendarService(token);
+            await calendarService.SyncEventsAsync();
             return calendarService.GetEvents(UserEmail);
         }
         public static bool IsTokenExist(string UserEmail)
@@ -23,7 +27,7 @@ namespace SyncApplication.Models.OutlookCalendar
         }
         private static OAuthToken GetUserTokenObject(string UserEmail)
         {
-            SyncToken FoundToken = OutlookTokenService.GetToken(UserEmail);
+            CalendarSyncToken FoundToken = OutlookTokenService.GetToken(UserEmail);
             if (FoundToken != null)
             {
                 return new OAuthToken
@@ -31,15 +35,15 @@ namespace SyncApplication.Models.OutlookCalendar
                     AccessToken = FoundToken.AccessToken,
                     RefreshToken = FoundToken.RefreshToken,
                     TokenType = FoundToken.TokenType,
-                    IssueOn = Convert.ToDateTime(FoundToken.UpdatedOn),
-                    ExpiresIn = Convert.ToInt32(FoundToken.ExpiresIn),
+                    IssueOn = Convert.ToDateTime(FoundToken.TokenUpdatedOn),
+                    ExpiresIn = Convert.ToInt32(FoundToken.TokenExpiresIn),
                 };
             }
             return new OAuthToken();
         }
         private static string GetAccessToken(string UserEmail)
         {
-            SyncToken FoundToken = OutlookTokenService.GetToken(UserEmail);
+            CalendarSyncToken FoundToken = OutlookTokenService.GetToken(UserEmail);
             if (FoundToken != null)
             {
                 //token expiry check
@@ -58,9 +62,9 @@ namespace SyncApplication.Models.OutlookCalendar
             }
         }
 
-        private static bool IsTokenExpired(SyncToken Token)
+        private static bool IsTokenExpired(CalendarSyncToken Token)
         {
-            var TokenExpiryDate = Convert.ToDateTime(Token.UpdatedOn).AddSeconds(Convert.ToInt32(Token.ExpiresIn - 300));
+            var TokenExpiryDate = Convert.ToDateTime(Token.TokenUpdatedOn).AddSeconds(Convert.ToInt32(Token.TokenExpiresIn - 300));
             if (TokenExpiryDate > DateTime.Now)
             {
                 return false;
@@ -71,13 +75,13 @@ namespace SyncApplication.Models.OutlookCalendar
             }
         }
 
-        private static string RefreshUserToken(SyncToken Token)
+        private static string RefreshUserToken(CalendarSyncToken Token)
         {
             //TODO: refersh token
             OAuthToken newToken = OutlookTokenService.RefreshToken(Token.RefreshToken);
             Token.AccessToken = newToken.AccessToken;
-            Token.ExpiresIn = newToken.ExpiresIn;
-            Token.UpdatedOn = newToken.IssueOn;
+            Token.TokenExpiresIn = newToken.ExpiresIn;
+            Token.TokenUpdatedOn = newToken.IssueOn;
 
             //TODO: update in db
             OutlookTokenService.UpdateToken(Token.TokenId, Token);

@@ -30,9 +30,12 @@ namespace SyncApplication.Models
 		
     #region Extensibility Method Definitions
     partial void OnCreated();
-    partial void InsertSyncToken(SyncToken instance);
-    partial void UpdateSyncToken(SyncToken instance);
-    partial void DeleteSyncToken(SyncToken instance);
+    partial void InsertCalendarSyncLog(CalendarSyncLog instance);
+    partial void UpdateCalendarSyncLog(CalendarSyncLog instance);
+    partial void DeleteCalendarSyncLog(CalendarSyncLog instance);
+    partial void InsertCalendarSyncToken(CalendarSyncToken instance);
+    partial void UpdateCalendarSyncToken(CalendarSyncToken instance);
+    partial void DeleteCalendarSyncToken(CalendarSyncToken instance);
     #endregion
 		
 		public SyncDbDataContext() : 
@@ -65,22 +68,303 @@ namespace SyncApplication.Models
 			OnCreated();
 		}
 		
-		public System.Data.Linq.Table<SyncToken> SyncTokens
+		public System.Data.Linq.Table<CalendarSyncLog> CalendarSyncLogs
 		{
 			get
 			{
-				return this.GetTable<SyncToken>();
+				return this.GetTable<CalendarSyncLog>();
+			}
+		}
+		
+		public System.Data.Linq.Table<CalendarSyncPermission> CalendarSyncPermissions
+		{
+			get
+			{
+				return this.GetTable<CalendarSyncPermission>();
+			}
+		}
+		
+		public System.Data.Linq.Table<CalendarSyncToken> CalendarSyncTokens
+		{
+			get
+			{
+				return this.GetTable<CalendarSyncToken>();
 			}
 		}
 	}
 	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.SyncToken")]
-	public partial class SyncToken : INotifyPropertyChanging, INotifyPropertyChanged
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.CalendarSyncLog")]
+	public partial class CalendarSyncLog : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _LogId;
+		
+		private System.Nullable<int> _TokenId;
+		
+		private System.Nullable<System.DateTime> _SyncDate;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnLogIdChanging(int value);
+    partial void OnLogIdChanged();
+    partial void OnTokenIdChanging(System.Nullable<int> value);
+    partial void OnTokenIdChanged();
+    partial void OnSyncDateChanging(System.Nullable<System.DateTime> value);
+    partial void OnSyncDateChanged();
+    #endregion
+		
+		public CalendarSyncLog()
+		{
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_LogId", DbType="Int NOT NULL", IsPrimaryKey=true)]
+		public int LogId
+		{
+			get
+			{
+				return this._LogId;
+			}
+			set
+			{
+				if ((this._LogId != value))
+				{
+					this.OnLogIdChanging(value);
+					this.SendPropertyChanging();
+					this._LogId = value;
+					this.SendPropertyChanged("LogId");
+					this.OnLogIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_TokenId", DbType="Int")]
+		public System.Nullable<int> TokenId
+		{
+			get
+			{
+				return this._TokenId;
+			}
+			set
+			{
+				if ((this._TokenId != value))
+				{
+					this.OnTokenIdChanging(value);
+					this.SendPropertyChanging();
+					this._TokenId = value;
+					this.SendPropertyChanged("TokenId");
+					this.OnTokenIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SyncDate", DbType="DateTime")]
+		public System.Nullable<System.DateTime> SyncDate
+		{
+			get
+			{
+				return this._SyncDate;
+			}
+			set
+			{
+				if ((this._SyncDate != value))
+				{
+					this.OnSyncDateChanging(value);
+					this.SendPropertyChanging();
+					this._SyncDate = value;
+					this.SendPropertyChanged("SyncDate");
+					this.OnSyncDateChanged();
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.CalendarSyncPermission")]
+	public partial class CalendarSyncPermission
+	{
+		
+		private System.Nullable<int> _Id;
+		
+		private System.Nullable<int> _CompanyId;
+		
+		private System.Nullable<int> _AccountId;
+		
+		private System.Nullable<bool> _AllowGoogleSync;
+		
+		private System.Nullable<bool> _AllowOutlookSync;
+		
+		private System.Nullable<bool> _AllowOffice365Sync;
+		
+		private System.Nullable<System.DateTime> _CreatedOn;
+		
+		private System.Nullable<System.DateTime> _UpdatedOn;
+		
+		public CalendarSyncPermission()
+		{
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", DbType="Int")]
+		public System.Nullable<int> Id
+		{
+			get
+			{
+				return this._Id;
+			}
+			set
+			{
+				if ((this._Id != value))
+				{
+					this._Id = value;
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CompanyId", DbType="Int")]
+		public System.Nullable<int> CompanyId
+		{
+			get
+			{
+				return this._CompanyId;
+			}
+			set
+			{
+				if ((this._CompanyId != value))
+				{
+					this._CompanyId = value;
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AccountId", DbType="Int")]
+		public System.Nullable<int> AccountId
+		{
+			get
+			{
+				return this._AccountId;
+			}
+			set
+			{
+				if ((this._AccountId != value))
+				{
+					this._AccountId = value;
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AllowGoogleSync", DbType="Bit")]
+		public System.Nullable<bool> AllowGoogleSync
+		{
+			get
+			{
+				return this._AllowGoogleSync;
+			}
+			set
+			{
+				if ((this._AllowGoogleSync != value))
+				{
+					this._AllowGoogleSync = value;
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AllowOutlookSync", DbType="Bit")]
+		public System.Nullable<bool> AllowOutlookSync
+		{
+			get
+			{
+				return this._AllowOutlookSync;
+			}
+			set
+			{
+				if ((this._AllowOutlookSync != value))
+				{
+					this._AllowOutlookSync = value;
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AllowOffice365Sync", DbType="Bit")]
+		public System.Nullable<bool> AllowOffice365Sync
+		{
+			get
+			{
+				return this._AllowOffice365Sync;
+			}
+			set
+			{
+				if ((this._AllowOffice365Sync != value))
+				{
+					this._AllowOffice365Sync = value;
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CreatedOn", DbType="DateTime")]
+		public System.Nullable<System.DateTime> CreatedOn
+		{
+			get
+			{
+				return this._CreatedOn;
+			}
+			set
+			{
+				if ((this._CreatedOn != value))
+				{
+					this._CreatedOn = value;
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UpdatedOn", DbType="DateTime")]
+		public System.Nullable<System.DateTime> UpdatedOn
+		{
+			get
+			{
+				return this._UpdatedOn;
+			}
+			set
+			{
+				if ((this._UpdatedOn != value))
+				{
+					this._UpdatedOn = value;
+				}
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.CalendarSyncToken")]
+	public partial class CalendarSyncToken : INotifyPropertyChanging, INotifyPropertyChanged
 	{
 		
 		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
 		
 		private int _TokenId;
+		
+		private System.Nullable<int> _CompanyId;
 		
 		private System.Nullable<int> _AccountId;
 		
@@ -88,17 +372,19 @@ namespace SyncApplication.Models
 		
 		private string _EmailServer;
 		
+		private System.Nullable<System.DateTime> _ConfigurationDate;
+		
+		private System.Nullable<bool> _IsSyncActive;
+		
 		private string _TokenType;
 		
 		private string _AccessToken;
 		
 		private string _RefreshToken;
 		
-		private System.Nullable<int> _ExpiresIn;
+		private System.Nullable<int> _TokenExpiresIn;
 		
-		private System.Nullable<System.DateTime> _UpdatedOn;
-		
-		private System.Nullable<System.DateTime> _ConfigurationDate;
+		private System.Nullable<System.DateTime> _TokenUpdatedOn;
 		
     #region Extensibility Method Definitions
     partial void OnLoaded();
@@ -106,27 +392,31 @@ namespace SyncApplication.Models
     partial void OnCreated();
     partial void OnTokenIdChanging(int value);
     partial void OnTokenIdChanged();
+    partial void OnCompanyIdChanging(System.Nullable<int> value);
+    partial void OnCompanyIdChanged();
     partial void OnAccountIdChanging(System.Nullable<int> value);
     partial void OnAccountIdChanged();
     partial void OnUserEmailChanging(string value);
     partial void OnUserEmailChanged();
     partial void OnEmailServerChanging(string value);
     partial void OnEmailServerChanged();
+    partial void OnConfigurationDateChanging(System.Nullable<System.DateTime> value);
+    partial void OnConfigurationDateChanged();
+    partial void OnIsSyncActiveChanging(System.Nullable<bool> value);
+    partial void OnIsSyncActiveChanged();
     partial void OnTokenTypeChanging(string value);
     partial void OnTokenTypeChanged();
     partial void OnAccessTokenChanging(string value);
     partial void OnAccessTokenChanged();
     partial void OnRefreshTokenChanging(string value);
     partial void OnRefreshTokenChanged();
-    partial void OnExpiresInChanging(System.Nullable<int> value);
-    partial void OnExpiresInChanged();
-    partial void OnUpdatedOnChanging(System.Nullable<System.DateTime> value);
-    partial void OnUpdatedOnChanged();
-    partial void OnConfigurationDateChanging(System.Nullable<System.DateTime> value);
-    partial void OnConfigurationDateChanged();
+    partial void OnTokenExpiresInChanging(System.Nullable<int> value);
+    partial void OnTokenExpiresInChanged();
+    partial void OnTokenUpdatedOnChanging(System.Nullable<System.DateTime> value);
+    partial void OnTokenUpdatedOnChanged();
     #endregion
 		
-		public SyncToken()
+		public CalendarSyncToken()
 		{
 			OnCreated();
 		}
@@ -147,6 +437,26 @@ namespace SyncApplication.Models
 					this._TokenId = value;
 					this.SendPropertyChanged("TokenId");
 					this.OnTokenIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_CompanyId", DbType="Int")]
+		public System.Nullable<int> CompanyId
+		{
+			get
+			{
+				return this._CompanyId;
+			}
+			set
+			{
+				if ((this._CompanyId != value))
+				{
+					this.OnCompanyIdChanging(value);
+					this.SendPropertyChanging();
+					this._CompanyId = value;
+					this.SendPropertyChanged("CompanyId");
+					this.OnCompanyIdChanged();
 				}
 			}
 		}
@@ -211,6 +521,46 @@ namespace SyncApplication.Models
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ConfigurationDate", DbType="DateTime")]
+		public System.Nullable<System.DateTime> ConfigurationDate
+		{
+			get
+			{
+				return this._ConfigurationDate;
+			}
+			set
+			{
+				if ((this._ConfigurationDate != value))
+				{
+					this.OnConfigurationDateChanging(value);
+					this.SendPropertyChanging();
+					this._ConfigurationDate = value;
+					this.SendPropertyChanged("ConfigurationDate");
+					this.OnConfigurationDateChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_IsSyncActive", DbType="Bit")]
+		public System.Nullable<bool> IsSyncActive
+		{
+			get
+			{
+				return this._IsSyncActive;
+			}
+			set
+			{
+				if ((this._IsSyncActive != value))
+				{
+					this.OnIsSyncActiveChanging(value);
+					this.SendPropertyChanging();
+					this._IsSyncActive = value;
+					this.SendPropertyChanged("IsSyncActive");
+					this.OnIsSyncActiveChanged();
+				}
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_TokenType", DbType="VarChar(10)")]
 		public string TokenType
 		{
@@ -231,7 +581,7 @@ namespace SyncApplication.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AccessToken", DbType="NVarChar(2000)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AccessToken", DbType="NVarChar(1500)")]
 		public string AccessToken
 		{
 			get
@@ -251,7 +601,7 @@ namespace SyncApplication.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RefreshToken", DbType="NVarChar(2000)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RefreshToken", DbType="NVarChar(1500)")]
 		public string RefreshToken
 		{
 			get
@@ -271,62 +621,42 @@ namespace SyncApplication.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ExpiresIn", DbType="Int")]
-		public System.Nullable<int> ExpiresIn
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_TokenExpiresIn", DbType="Int")]
+		public System.Nullable<int> TokenExpiresIn
 		{
 			get
 			{
-				return this._ExpiresIn;
+				return this._TokenExpiresIn;
 			}
 			set
 			{
-				if ((this._ExpiresIn != value))
+				if ((this._TokenExpiresIn != value))
 				{
-					this.OnExpiresInChanging(value);
+					this.OnTokenExpiresInChanging(value);
 					this.SendPropertyChanging();
-					this._ExpiresIn = value;
-					this.SendPropertyChanged("ExpiresIn");
-					this.OnExpiresInChanged();
+					this._TokenExpiresIn = value;
+					this.SendPropertyChanged("TokenExpiresIn");
+					this.OnTokenExpiresInChanged();
 				}
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UpdatedOn", DbType="DateTime")]
-		public System.Nullable<System.DateTime> UpdatedOn
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_TokenUpdatedOn", DbType="DateTime")]
+		public System.Nullable<System.DateTime> TokenUpdatedOn
 		{
 			get
 			{
-				return this._UpdatedOn;
+				return this._TokenUpdatedOn;
 			}
 			set
 			{
-				if ((this._UpdatedOn != value))
+				if ((this._TokenUpdatedOn != value))
 				{
-					this.OnUpdatedOnChanging(value);
+					this.OnTokenUpdatedOnChanging(value);
 					this.SendPropertyChanging();
-					this._UpdatedOn = value;
-					this.SendPropertyChanged("UpdatedOn");
-					this.OnUpdatedOnChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ConfigurationDate", DbType="DateTime")]
-		public System.Nullable<System.DateTime> ConfigurationDate
-		{
-			get
-			{
-				return this._ConfigurationDate;
-			}
-			set
-			{
-				if ((this._ConfigurationDate != value))
-				{
-					this.OnConfigurationDateChanging(value);
-					this.SendPropertyChanging();
-					this._ConfigurationDate = value;
-					this.SendPropertyChanged("ConfigurationDate");
-					this.OnConfigurationDateChanged();
+					this._TokenUpdatedOn = value;
+					this.SendPropertyChanged("TokenUpdatedOn");
+					this.OnTokenUpdatedOnChanged();
 				}
 			}
 		}

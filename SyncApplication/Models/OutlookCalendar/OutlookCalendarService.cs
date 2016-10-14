@@ -6,6 +6,8 @@ using System.Linq;
 using System.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
+using Microsoft.OData.ProxyExtensions;
 
 namespace SyncApplication.Models.OutlookCalendar
 {
@@ -13,10 +15,12 @@ namespace SyncApplication.Models.OutlookCalendar
     {
         public const string _BaseUrl = "https://outlook.office.com/api/v2.0";
         private string _AccessToken;
+        private OutlookServicesClient _OutlookClient;
 
         public OutlookCalendarService(string userToken)
         {
             this._AccessToken = userToken;
+            _OutlookClient = new OutlookServicesClient(new Uri(_BaseUrl), GetAccessTokenAsync);
         }
 
         public List<CalendarEvent> GetEvents(string UserEmailAddress)
@@ -56,6 +60,106 @@ namespace SyncApplication.Models.OutlookCalendar
         public CalendarEvent DeleteEvent(CalendarEvent objCalendarEvent)
         {
             return new CalendarEvent();
+        }
+        public async Task<List<CalendarEvent>> GetEventsAsync()
+        {
+            var lstEvents = new List<CalendarEvent>();
+            try
+            {
+                //var client = new OutlookServicesClient(new Uri(_BaseUrl), GetAccessTokenAsync);
+
+                IPagedCollection<IEvent> eventsResults = await _OutlookClient.Me.Calendar.Events.ExecuteAsync();
+
+                foreach (IEvent item in eventsResults.CurrentPage)
+                {
+                    lstEvents.Add(new CalendarEvent
+                    {
+                        EventId = item.Id,
+                        Description = item.Subject,
+                        Location = item.Location.DisplayName,
+                        StartDate = Convert.ToDateTime(item.Start.DateTime),
+                        EndDate = Convert.ToDateTime(item.End.DateTime),
+                        AttendeeEmailAddress = item.Attendees[0].EmailAddress.Address
+                    });
+                }
+                while (eventsResults.MorePagesAvailable)
+                {
+                    eventsResults = await eventsResults.GetNextPageAsync();
+                    foreach (IEvent item in eventsResults.CurrentPage)
+                    {
+                        lstEvents.Add(new CalendarEvent
+                        {
+                            EventId = item.Id,
+                            Description = item.Subject,
+                            Location = item.Location.DisplayName,
+                            StartDate = Convert.ToDateTime(item.Start.DateTime),
+                            EndDate = Convert.ToDateTime(item.End.DateTime),
+                            AttendeeEmailAddress = item.Attendees[0].EmailAddress.Address
+                        });
+                    }
+                }
+                return lstEvents;
+            }
+            catch (Exception ex)
+            {
+                return lstEvents;
+            }
+        }
+        public async Task<List<CalendarEvent>> SyncEventsAsync()
+        {
+            var lstEvents = new List<CalendarEvent>();
+            try
+            {
+                //var client = new OutlookServicesClient(new Uri(_BaseUrl), GetAccessTokenAsync);
+
+                DateTime LastSync = (DateTime.Now).AddMinutes(-15);
+
+                IPagedCollection<IEvent> eventsResults = await _OutlookClient.Me.Calendar.Events
+                    .Where(e => e.LastModifiedDateTime > LastSync)
+                    .ExecuteAsync();
+
+                // You can access each event as follows.
+                foreach (IEvent item in eventsResults.CurrentPage)
+                {
+                    lstEvents.Add(new CalendarEvent
+                    {
+                        EventId = item.Id,
+                        Description = item.Subject,
+                        Location = item.Location.DisplayName,
+                        StartDate = Convert.ToDateTime(item.Start.DateTime),
+                        EndDate = Convert.ToDateTime(item.End.DateTime),
+                        AttendeeEmailAddress = item.Attendees[0].EmailAddress.Address
+                    });
+                }
+                if (eventsResults.MorePagesAvailable)
+                {
+                    while (eventsResults.MorePagesAvailable)
+                    {
+                        eventsResults = await eventsResults.GetNextPageAsync();
+                        foreach (IEvent item in eventsResults.CurrentPage)
+                        {
+                            lstEvents.Add(new CalendarEvent
+                            {
+                                EventId = item.Id,
+                                Description = item.Subject,
+                                Location = item.Location.DisplayName,
+                                StartDate = Convert.ToDateTime(item.Start.DateTime),
+                                EndDate = Convert.ToDateTime(item.End.DateTime),
+                                AttendeeEmailAddress = item.Attendees[0].EmailAddress.Address
+                            });
+                        }
+                    }
+                }
+                return lstEvents;
+            }
+            catch (Exception ex)
+            {
+                return lstEvents;
+            }
+        }
+        private async Task<string> GetAccessTokenAsync()
+        {
+            return await Task.Run(() => _AccessToken);
         }
     }
 }

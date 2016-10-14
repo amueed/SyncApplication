@@ -23,15 +23,15 @@ namespace SyncApplication.Models.GoogleCalendar
         }
         private static OAuthToken GetUserTokenObject(string UserEmail)
         {
-            SyncToken FoundToken = GoogleTokenService.GetToken(UserEmail);
+            CalendarSyncToken FoundToken = GoogleTokenService.GetToken(UserEmail);
             if (FoundToken != null)
             {
                 return new OAuthToken
                 {
                     AccessToken = FoundToken.AccessToken,
                     RefreshToken = FoundToken.RefreshToken,
-                    IssueOn = Convert.ToDateTime(FoundToken.UpdatedOn),
-                    ExpiresIn = Convert.ToInt32(FoundToken.ExpiresIn),
+                    IssueOn = Convert.ToDateTime(FoundToken.TokenUpdatedOn),
+                    ExpiresIn = Convert.ToInt32(FoundToken.TokenExpiresIn),
                 };
             }
             return new OAuthToken();
@@ -39,7 +39,7 @@ namespace SyncApplication.Models.GoogleCalendar
 
         private static string GetAccessToken(string UserEmail)
         {
-            SyncToken FoundToken = GoogleTokenService.GetToken(UserEmail);
+            CalendarSyncToken FoundToken = GoogleTokenService.GetToken(UserEmail);
             if (FoundToken != null)
             {
                 //token expiry check
@@ -58,9 +58,9 @@ namespace SyncApplication.Models.GoogleCalendar
             }
         }
 
-        private static bool IsTokenExpired(SyncToken Token)
+        private static bool IsTokenExpired(CalendarSyncToken Token)
         {
-            var TokenExpiryDate = Convert.ToDateTime(Token.UpdatedOn).AddSeconds(Convert.ToInt32(Token.ExpiresIn - 300));
+            var TokenExpiryDate = Convert.ToDateTime(Token.TokenUpdatedOn).AddSeconds(Convert.ToInt32(Token.TokenExpiresIn - 300));
             if (TokenExpiryDate > DateTime.Now)
             {
                 return false;
@@ -71,13 +71,13 @@ namespace SyncApplication.Models.GoogleCalendar
             }
         }
 
-        private static string RefreshUserToken(SyncToken Token)
+        private static string RefreshUserToken(CalendarSyncToken Token)
         {
             //TODO: refersh token
             OAuthToken newToken = GoogleTokenService.RefreshToken(Token.RefreshToken);
             Token.AccessToken = newToken.AccessToken;
-            Token.ExpiresIn = newToken.ExpiresIn;
-            Token.UpdatedOn = newToken.IssueOn;
+            Token.TokenExpiresIn = newToken.ExpiresIn;
+            Token.TokenUpdatedOn = newToken.IssueOn;
 
             //TODO: update in db
             GoogleTokenService.UpdateToken(Token.TokenId, Token);

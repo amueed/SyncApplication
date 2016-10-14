@@ -22,25 +22,25 @@ namespace SyncApplication.Models.GoogleCalendar
         {
             return new SyncDbDataContext();
         }
-        public static void InsertToken(SyncToken Token)
+        public static void InsertToken(CalendarSyncToken Token)
         {
             using (var db = GetDbContextObj())
             {
-                db.SyncTokens.InsertOnSubmit(Token);
+                db.CalendarSyncTokens.InsertOnSubmit(Token);
                 db.SubmitChanges();
             }
         }
-        public static void UpdateToken(int TokenId, SyncToken Token)
+        public static void UpdateToken(int TokenId, CalendarSyncToken Token)
         {
             using (var db = GetDbContextObj())
             {
-                IQueryable<SyncToken> res = db.SyncTokens.Where(t => t.TokenId == TokenId);
+                IQueryable<CalendarSyncToken> res = db.CalendarSyncTokens.Where(t => t.TokenId == TokenId);
                 if (res.Any())
                 {
-                    SyncToken savedToken = res.FirstOrDefault();
+                    CalendarSyncToken savedToken = res.FirstOrDefault();
                     savedToken.AccessToken = Token.AccessToken;
-                    savedToken.ExpiresIn = Token.ExpiresIn;
-                    savedToken.UpdatedOn = Token.UpdatedOn;
+                    savedToken.TokenExpiresIn = Token.TokenExpiresIn;
+                    savedToken.TokenUpdatedOn = Token.TokenUpdatedOn;
                     db.SubmitChanges();
                 }
             }
@@ -49,19 +49,19 @@ namespace SyncApplication.Models.GoogleCalendar
         {
             using (var db = GetDbContextObj())
             {
-                SyncToken res = db.SyncTokens.Where(t => t.UserEmail == UserEmail).FirstOrDefault();
+                CalendarSyncToken res = db.CalendarSyncTokens.Where(t => t.UserEmail == UserEmail).FirstOrDefault();
                 if (res != null)
                 {
-                    db.SyncTokens.DeleteOnSubmit(res);
+                    db.CalendarSyncTokens.DeleteOnSubmit(res);
                     db.SubmitChanges();
                 }
             }
         }
-        public static SyncToken GetToken(string UserEmail)
+        public static CalendarSyncToken GetToken(string UserEmail)
         {
             using (var db = GetDbContextObj())
             {
-                return db.SyncTokens.Where(t => t.UserEmail == UserEmail).FirstOrDefault();
+                return db.CalendarSyncTokens.Where(t => t.UserEmail == UserEmail).FirstOrDefault();
             }
         }
         #endregion Token DB Operation - End

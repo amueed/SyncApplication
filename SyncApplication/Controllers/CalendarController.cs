@@ -4,6 +4,7 @@ using SyncApplication.Models.OutlookCalendar;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -12,7 +13,7 @@ namespace SyncApplication.Controllers
     public class CalendarController : Controller
     {
         // GET: Calendar
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
             //string userEmail = "mueed.bpit@gmail.com";
             //string emailServer = EmailServer.Google.ToString();
@@ -35,7 +36,7 @@ namespace SyncApplication.Controllers
             {
                 if (OutlookCalendarBL.IsTokenExist(userEmail))
                 {
-                    List<CalendarEvent> res = OutlookCalendarBL.GetEvents(userEmail);
+                    List<CalendarEvent> res = await OutlookCalendarBL.GetEvents(userEmail);
                 }
                 else
                 {
