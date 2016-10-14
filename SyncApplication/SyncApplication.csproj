@@ -181,6 +181,9 @@
     <Compile Include="Models\OutlookCalendar\OutlookCalendarDB.cs" />
     <Compile Include="Models\OutlookCalendar\OutlookCalendarService.cs" />
     <Compile Include="Models\OutlookCalendar\OutlookTokenService.cs" />
+    <Compile Include="Models\Settings\DatabaseSettings.cs" />
+    <Compile Include="Models\Settings\GoogleSyncSettings.cs" />
+    <Compile Include="Models\Settings\OutlookSyncSettings.cs" />
     <Compile Include="Models\SyncDb.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

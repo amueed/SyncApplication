@@ -16,5 +16,9 @@ namespace SyncApplication.Models
         public int? Reminder { get; set; }
         public int? ReminderType { get; set; }
         public string AttendeeEmailAddress { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
+        public bool? IsCancelled { get; set; }
+        public bool? IsUpdated { get; set; }
+        public string SyncedEventId { get; set; }
     }
 }

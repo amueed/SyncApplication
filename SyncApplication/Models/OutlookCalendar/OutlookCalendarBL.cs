@@ -14,8 +14,8 @@ namespace SyncApplication.Models.OutlookCalendar
             //var token = string.Format("{0} {1}", userToken.TokenType, userToken.AccessToken);
             string token = userToken.AccessToken;
             var calendarService = new OutlookCalendarService(token);
-            await calendarService.SyncEventsAsync();
-            return calendarService.GetEvents(UserEmail);
+            return await calendarService.SyncEventsAsync();
+            //return calendarService.GetEvents(UserEmail);
         }
         public static bool IsTokenExist(string UserEmail)
         {

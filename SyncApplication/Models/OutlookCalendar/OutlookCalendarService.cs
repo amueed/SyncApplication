@@ -1,13 +1,8 @@
-﻿using Microsoft.Office365.OutlookServices;
-using RestSharp;
+﻿using Microsoft.OData.ProxyExtensions;
+using Microsoft.Office365.OutlookServices;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
-using Microsoft.OData.ProxyExtensions;
 
 namespace SyncApplication.Models.OutlookCalendar
 {
@@ -23,43 +18,97 @@ namespace SyncApplication.Models.OutlookCalendar
             _OutlookClient = new OutlookServicesClient(new Uri(_BaseUrl), GetAccessTokenAsync);
         }
 
-        public List<CalendarEvent> GetEvents(string UserEmailAddress)
+        public async Task<string> InsertEventAsync(CalendarEvent objCalendarEvent)
         {
-            var lstCalendarEvent = new List<CalendarEvent>();
-
-            var lstEvents = new List<Event>();
-
-            var client = new RestClient(_BaseUrl);
-            var request = new RestRequest("/me/events", Method.GET);
-
-            request.AddHeader("Authorization", _AccessToken);
-            request.AddHeader("Prefer", "outlook.timezone=\"Pakistan Standard Time\"");
-
-            IRestResponse response = client.Execute(request);
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            // Create an attendee for the event    
+            Attendee[] attendees =
             {
-                var jsonResponse = JObject.Parse(response.Content);
-                var res = JsonConvert.DeserializeObject<List<Event>>(jsonResponse["value"].ToString());
+                new Attendee
+                {
+                    Type = AttendeeType.Required,
+                    EmailAddress = new EmailAddress
+                    {
+                        Address = "katiej@a830edad9050849NDA1.onmicrosoft.com"
+                    },
+                }
+            };
 
+            // Create the event object
+            var newEvent = new Event
+            {
+                Subject = "Sync up",
+                Location = new Location
+                {
+                    DisplayName = "Water cooler"
+                },
+                Attendees = attendees,
+                Start = new DateTimeTimeZone()
+                {
+                    TimeZone = TimeZoneInfo.Local.Id,
+                    DateTime = new DateTime(2015, 12, 1, 9, 30, 0).ToString("s")
+                },
+                End = new DateTimeTimeZone()
+                {
+                    TimeZone = TimeZoneInfo.Local.Id,
+                    DateTime = new DateTime(2015, 12, 1, 10, 30, 0).ToString("s")
+                },
+                Body = new ItemBody
+                {
+                    Content = "Status updates, blocking issues, and next steps",
+                    ContentType = BodyType.Text
+                }
+            };
 
-                //"skip_token"
+            await _OutlookClient.Me.Calendar.Events.AddEventAsync(newEvent);
+            // Get the event ID.
+            //string objCalendarEvent.SyncedEventId = newEvent.Id;
+            return newEvent.Id;
+        }
+        public async Task<bool> UpdateEventAsync(string SyncedEventId, CalendarEvent objCalendarEvent)
+        {
+            try
+            {
+                IEvent eventToUpdate = await _OutlookClient.Me.Events[SyncedEventId].ExecuteAsync();
+
+                // Add attendees
+                eventToUpdate.Attendees.Add(new Attendee
+                {
+                    Type = AttendeeType.Required,
+                    EmailAddress = new EmailAddress
+                    {
+                        Address = "garthf@a830edad9050849NDA1.onmicrosoft.com",
+                    },
+                });
+
+                // Make other changes
+                eventToUpdate.Subject = "New event name";
+                eventToUpdate.Location.DisplayName = "New Location";
+
+                // Commit all changes to the event
+                await eventToUpdate.UpdateAsync();
+
+                return true;
             }
-            return lstCalendarEvent;
+            catch (Exception)
+            {
+                return false;
+            }
         }
-
-        public CalendarEvent InsertEvent(CalendarEvent objCalendarEvent)
+        public async Task<bool> DeleteEventAsync(string SyncedEventId)
         {
-            return new CalendarEvent();
-        }
+            try
+            {
+                // Get an existing event by ID
+                IEvent eventToDelete = await _OutlookClient.Me.Events[SyncedEventId].ExecuteAsync();
 
-        public CalendarEvent UpdateEvent(CalendarEvent objCalendarEvent)
-        {
-            return new CalendarEvent();
-        }
-
-        public CalendarEvent DeleteEvent(CalendarEvent objCalendarEvent)
-        {
-            return new CalendarEvent();
+                //Delete the event
+                await eventToDelete.DeleteAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
         public async Task<List<CalendarEvent>> GetEventsAsync()
         {
