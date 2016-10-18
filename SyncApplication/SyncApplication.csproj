@@ -169,16 +169,17 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\AppCredentials.cs" />
     <Compile Include="Models\CalendarEvent.cs" />
+    <Compile Include="Models\CalendarRepository.cs" />
     <Compile Include="Models\EmailServer.cs" />
     <Compile Include="Models\GoogleCalendar\GoogleCalendarBL.cs" />
-    <Compile Include="Models\GoogleCalendar\GoogleCalendarDB.cs" />
     <Compile Include="Models\GoogleCalendar\GoogleCalendarService.cs" />
     <Compile Include="Models\GoogleCalendar\GoogleTokenService.cs" />
-    <Compile Include="Models\OAuthToken.cs" />
+    <Compile Include="Models\TokenRepository.cs" />
+    <Compile Include="Models\UserToken.cs" />
     <Compile Include="Models\ApplicationCredentials.cs" />
     <Compile Include="Models\OutlookCalendar\OutlookCalendarBL.cs" />
-    <Compile Include="Models\OutlookCalendar\OutlookCalendarDB.cs" />
     <Compile Include="Models\OutlookCalendar\OutlookCalendarService.cs" />
     <Compile Include="Models\OutlookCalendar\OutlookTokenService.cs" />
     <Compile Include="Models\Settings\DatabaseSettings.cs" />

@@ -12,37 +12,40 @@ namespace SyncApplication.Models.GoogleCalendar
 {
     public class GoogleCalendarService
     {
-        public const string _ClientID = "1083615727855-vgj45vpj5tqrb2e4m5tpk5gn0vuac0q5.apps.googleusercontent.com";
-        public const string _ClientSecret = "fVAoZ3ved3ttjZSucvFuTE9L";
+        private CalendarService _CalendarService;
+        private AppCredentials _AppCredentials;
 
-        private CalendarService _CalendarService { get; set; }
-
-        public GoogleCalendarService(OAuthToken objOAuthToken)
+        public GoogleCalendarService(AppCredentials objAppCredentials)
         {
-            _CalendarService = GetCalendarServiceObj(objOAuthToken);
+            _AppCredentials = objAppCredentials;
+        }
+        public GoogleCalendarService(UserToken objUserToken, AppCredentials objAppCredentials)
+        {
+            _CalendarService = GetCalendarServiceObj(objUserToken);
+            _AppCredentials = objAppCredentials;
         }
 
-        private CalendarService GetCalendarServiceObj(OAuthToken objOAuthToken)
+        private CalendarService GetCalendarServiceObj(UserToken objUserToken)
         {
             var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
             {
                 ClientSecrets = new ClientSecrets
                 {
-                    ClientId = _ClientID,
-                    ClientSecret = _ClientSecret
+                    ClientId = _AppCredentials.ClientId,
+                    ClientSecret = _AppCredentials.ClientSecret
                 },
                 Scopes = new[] { CalendarService.Scope.Calendar }
             });
 
             var credential = new UserCredential(flow, "me", new TokenResponse
             {
-                AccessToken = objOAuthToken.AccessToken,
-                RefreshToken = objOAuthToken.RefreshToken
+                AccessToken = objUserToken.AccessToken,
+                RefreshToken = objUserToken.RefreshToken
             });
 
             return new CalendarService(new BaseClientService.Initializer
             {
-                ApplicationName = "emax-sync",
+                ApplicationName = _AppCredentials.AppName,
                 HttpClientInitializer = credential,
                 DefaultExponentialBackOffPolicy = ExponentialBackOffPolicy.Exception | ExponentialBackOffPolicy.UnsuccessfulResponse503
             });
@@ -91,18 +94,20 @@ namespace SyncApplication.Models.GoogleCalendar
             }
         }
 
-        public CalendarEvent InsertEvent(CalendarEvent objCalendarEvent) {
-            return new CalendarEvent();
+        public string InsertEvent(CalendarEvent objCalendarEvent)
+        {
+            string SyncedEventId = string.Empty;
+            return SyncedEventId;
         }
 
-        public CalendarEvent UpdateEvent(CalendarEvent objCalendarEvent)
+        public bool UpdateEvent(CalendarEvent objCalendarEvent)
         {
-            return new CalendarEvent();
+            return true;
         }
 
-        public CalendarEvent DeleteEvent(CalendarEvent objCalendarEvent)
+        public bool DeleteEvent(CalendarEvent objCalendarEvent)
         {
-            return new CalendarEvent();
+            return true;
         }
     }
 }

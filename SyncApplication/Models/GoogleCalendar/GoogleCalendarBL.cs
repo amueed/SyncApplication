@@ -7,26 +7,82 @@ namespace SyncApplication.Models.GoogleCalendar
 {
     public class GoogleCalendarBL
     {
-        public static List<CalendarEvent> GetEvents(string UserEmail)
+        private AppCredentials _AppCredentials;
+        private string _ConnectionString = string.Empty;
+        public GoogleCalendarBL(string ConnectionString, AppCredentials objAppCredentials)
         {
-            OAuthToken userToken = GetUserTokenObject(UserEmail);
-            var calendarService = new GoogleCalendarService(userToken);
-            return calendarService.GetEvents(UserEmail);
+            _ConnectionString = ConnectionString;
+            _AppCredentials = objAppCredentials;
         }
-        public static bool IsTokenExist(string UserEmail)
+
+        //Get GoogleCalendarService object
+        private GoogleCalendarService GetGoogleCalendarServiceObj(string UserEmail)
+        {
+            UserToken objUserToken = GetUserToken(UserEmail);
+            return new GoogleCalendarService(objUserToken, _AppCredentials);
+        }
+
+        //Get CalendarRepository object
+        private CalendarRepository GetCalendarRepositoryObj()
+        {
+            return new CalendarRepository(_ConnectionString);
+        }
+
+        //Get GoogleTokenService object
+        private GoogleTokenService GetGoogleTokenServiceObj()
+        {
+            return new GoogleTokenService(_AppCredentials);
+        }
+
+        //Get TokenRepository object
+        private TokenRepository GetTokenRepositoryObj()
+        {
+            return new TokenRepository(_ConnectionString);
+        }
+
+        public List<CalendarEvent> GetEvents(string UserEmail)
+        {
+            return GetGoogleCalendarServiceObj(UserEmail).GetEvents(UserEmail);
+        }
+        public string InsertEvents(string UserEmail)
+        {
+            //TODO: Insert into Google Calndar
+            string SyncedEventId = GetGoogleCalendarServiceObj(UserEmail).InsertEvent(new CalendarEvent());
+            //TODO: Insert into Local DB
+            string EventId = GetCalendarRepositoryObj().InsertEvent(new CalendarEvent());
+            return "";
+        }
+        public bool UpdateEvents(string EventId, string UserEmail)
+        {
+            //TODO: Update into Google Calndar
+            GetGoogleCalendarServiceObj(UserEmail).UpdateEvent(new CalendarEvent());
+            //TODO: Update into Local DB
+            GetCalendarRepositoryObj().UpdateEvent(EventId, new CalendarEvent());
+            return true;
+        }
+        public bool DeleteEvents(string EventId, string UserEmail)
+        {
+            //TODO: Delete into Google Calndar
+            GetGoogleCalendarServiceObj(UserEmail).DeleteEvent(new CalendarEvent());
+            //TODO: Delete into Local DB
+            GetCalendarRepositoryObj().DeleteEvent(EventId);
+            return true;
+        }
+        public bool IsTokenExist(string UserEmail)
         {
             return GetAccessToken(UserEmail) != "no-token" ? true : false;
         }
-        public static string GetLoginUrl()
+        public string GetLoginUrl()
         {
-            return GoogleTokenService.GetAuthUrl();
+            return GetGoogleTokenServiceObj().GetAuthUrl();
         }
-        private static OAuthToken GetUserTokenObject(string UserEmail)
+
+        private UserToken GetUserToken(string UserEmail)
         {
-            CalendarSyncToken FoundToken = GoogleTokenService.GetToken(UserEmail);
+            CalendarSyncToken FoundToken = GetTokenRepositoryObj().GetToken(UserEmail);
             if (FoundToken != null)
             {
-                return new OAuthToken
+                return new UserToken
                 {
                     AccessToken = FoundToken.AccessToken,
                     RefreshToken = FoundToken.RefreshToken,
@@ -34,12 +90,11 @@ namespace SyncApplication.Models.GoogleCalendar
                     ExpiresIn = Convert.ToInt32(FoundToken.TokenExpiresIn),
                 };
             }
-            return new OAuthToken();
+            return new UserToken();
         }
-
-        private static string GetAccessToken(string UserEmail)
+        private string GetAccessToken(string UserEmail)
         {
-            CalendarSyncToken FoundToken = GoogleTokenService.GetToken(UserEmail);
+            CalendarSyncToken FoundToken = GetTokenRepositoryObj().GetToken(UserEmail);
             if (FoundToken != null)
             {
                 //token expiry check
@@ -57,8 +112,7 @@ namespace SyncApplication.Models.GoogleCalendar
                 return "no-token";
             }
         }
-
-        private static bool IsTokenExpired(CalendarSyncToken Token)
+        private bool IsTokenExpired(CalendarSyncToken Token)
         {
             var TokenExpiryDate = Convert.ToDateTime(Token.TokenUpdatedOn).AddSeconds(Convert.ToInt32(Token.TokenExpiresIn - 300));
             if (TokenExpiryDate > DateTime.Now)
@@ -71,16 +125,16 @@ namespace SyncApplication.Models.GoogleCalendar
             }
         }
 
-        private static string RefreshUserToken(CalendarSyncToken Token)
+        private string RefreshUserToken(CalendarSyncToken Token)
         {
             //TODO: refersh token
-            OAuthToken newToken = GoogleTokenService.RefreshToken(Token.RefreshToken);
+            UserToken newToken = GetGoogleTokenServiceObj().RefreshToken(Token.RefreshToken);
             Token.AccessToken = newToken.AccessToken;
             Token.TokenExpiresIn = newToken.ExpiresIn;
             Token.TokenUpdatedOn = newToken.IssueOn;
 
             //TODO: update in db
-            GoogleTokenService.UpdateToken(Token.TokenId, Token);
+            GetTokenRepositoryObj().UpdateToken(Token.TokenId, Token);
             return newToken.AccessToken;
         }
     }

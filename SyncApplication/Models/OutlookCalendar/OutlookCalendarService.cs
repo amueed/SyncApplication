@@ -8,14 +8,15 @@ namespace SyncApplication.Models.OutlookCalendar
 {
     public class OutlookCalendarService
     {
-        public const string _BaseUrl = "https://outlook.office.com/api/v2.0";
-        private string _AccessToken;
+        private string _AccessToken = string.Empty;
         private OutlookServicesClient _OutlookClient;
+        private AppCredentials _AppCredentials;
 
-        public OutlookCalendarService(string userToken)
+        public OutlookCalendarService(UserToken objUserToken, AppCredentials objAppCredentials)
         {
-            this._AccessToken = userToken;
-            _OutlookClient = new OutlookServicesClient(new Uri(_BaseUrl), GetAccessTokenAsync);
+            _AccessToken = objUserToken.AccessToken;
+            _AppCredentials = objAppCredentials;
+            _OutlookClient = new OutlookServicesClient(new Uri(objAppCredentials.BaseUrl), GetAccessTokenAsync);
         }
 
         public async Task<string> InsertEventAsync(CalendarEvent objCalendarEvent)
@@ -115,9 +116,7 @@ namespace SyncApplication.Models.OutlookCalendar
             var lstEvents = new List<CalendarEvent>();
             try
             {
-                //var client = new OutlookServicesClient(new Uri(_BaseUrl), GetAccessTokenAsync);
-
-                IPagedCollection<IEvent> eventsResults = await _OutlookClient.Me.Calendar.Events.ExecuteAsync();
+                var eventsResults = await _OutlookClient.Me.Calendar.Events.ExecuteAsync();
 
                 foreach (IEvent item in eventsResults.CurrentPage)
                 {
