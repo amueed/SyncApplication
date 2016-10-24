@@ -19,7 +19,7 @@ namespace SyncApplication.Models.GoogleCalendar
         private GoogleCalendarService GetGoogleCalendarServiceObj(string UserEmail)
         {
             UserToken objUserToken = GetUserToken(UserEmail);
-            return new GoogleCalendarService(objUserToken, _AppCredentials);
+            return new GoogleCalendarService(_AppCredentials, objUserToken);
         }
 
         //Get CalendarRepository object
@@ -42,20 +42,20 @@ namespace SyncApplication.Models.GoogleCalendar
 
         public List<CalendarEvent> GetEvents(string UserEmail)
         {
-            return GetGoogleCalendarServiceObj(UserEmail).GetEvents(UserEmail);
+            return GetGoogleCalendarServiceObj(UserEmail).GetEvents();
         }
-        public string InsertEvents(string UserEmail)
+        public string InsertEvents(string UserEmail, CalendarEvent objCalendarEvent)
         {
             //TODO: Insert into Google Calndar
-            string SyncedEventId = GetGoogleCalendarServiceObj(UserEmail).InsertEvent(new CalendarEvent());
+            string SyncedEventId = GetGoogleCalendarServiceObj(UserEmail).InsertEvent(objCalendarEvent);
             //TODO: Insert into Local DB
-            string EventId = GetCalendarRepositoryObj().InsertEvent(new CalendarEvent());
+            string EventId = GetCalendarRepositoryObj().InsertEvent(objCalendarEvent);
             return "";
         }
         public bool UpdateEvents(string EventId, string UserEmail)
         {
             //TODO: Update into Google Calndar
-            GetGoogleCalendarServiceObj(UserEmail).UpdateEvent(new CalendarEvent());
+            GetGoogleCalendarServiceObj(UserEmail).UpdateEvent(EventId, new CalendarEvent());
             //TODO: Update into Local DB
             GetCalendarRepositoryObj().UpdateEvent(EventId, new CalendarEvent());
             return true;
@@ -63,7 +63,7 @@ namespace SyncApplication.Models.GoogleCalendar
         public bool DeleteEvents(string EventId, string UserEmail)
         {
             //TODO: Delete into Google Calndar
-            GetGoogleCalendarServiceObj(UserEmail).DeleteEvent(new CalendarEvent());
+            GetGoogleCalendarServiceObj(UserEmail).DeleteEvent(EventId);
             //TODO: Delete into Local DB
             GetCalendarRepositoryObj().DeleteEvent(EventId);
             return true;
@@ -86,6 +86,7 @@ namespace SyncApplication.Models.GoogleCalendar
                 {
                     AccessToken = FoundToken.AccessToken,
                     RefreshToken = FoundToken.RefreshToken,
+                    TokenType = FoundToken.TokenType,
                     IssueOn = Convert.ToDateTime(FoundToken.TokenUpdatedOn),
                     ExpiresIn = Convert.ToInt32(FoundToken.TokenExpiresIn),
                 };

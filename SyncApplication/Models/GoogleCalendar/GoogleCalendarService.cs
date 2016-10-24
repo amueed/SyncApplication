@@ -19,10 +19,10 @@ namespace SyncApplication.Models.GoogleCalendar
         {
             _AppCredentials = objAppCredentials;
         }
-        public GoogleCalendarService(UserToken objUserToken, AppCredentials objAppCredentials)
+        public GoogleCalendarService(AppCredentials objAppCredentials, UserToken objUserToken)
         {
-            _CalendarService = GetCalendarServiceObj(objUserToken);
             _AppCredentials = objAppCredentials;
+            _CalendarService = GetCalendarServiceObj(objUserToken);
         }
 
         private CalendarService GetCalendarServiceObj(UserToken objUserToken)
@@ -51,13 +51,13 @@ namespace SyncApplication.Models.GoogleCalendar
             });
         }
 
-        public List<CalendarEvent> GetEvents(string UserEmailAddress)
+        public List<CalendarEvent> GetEvents()
         {
             var lstCalendarEvent = new List<CalendarEvent>();
             try
             {
                 //execute get request
-                EventsResource.ListRequest requestEventsList = _CalendarService.Events.List(UserEmailAddress);
+                EventsResource.ListRequest requestEventsList = _CalendarService.Events.List("primary");
                 string pageToken = null;
                 Events feed;
                 do
@@ -74,12 +74,12 @@ namespace SyncApplication.Models.GoogleCalendar
                             EventId = item.Id,
                             Description = item.Description,
                             Location = item.Location,
-                            Summary = item.Summary,
+                            Title = item.Summary,
                             StartDate = item.Start.DateTime != null ? item.Start.DateTime : Convert.ToDateTime(item.Start.Date + " 12:00:00 AM"),
                             EndDate = item.End.DateTime != null ? item.End.DateTime : Convert.ToDateTime(item.End.Date + " 11:59:59 PM"),
                             Reminder = 0,
-                            ReminderType = 0,
-                            AttendeeEmailAddress = item.Attendees != null ? item.Attendees[0].ResponseStatus : ""
+                            ReminderType = "Email",
+                            AttendeeEmailAddress = item.Attendees != null ? item.Attendees[0].Email : ""
                         });
                     }
                     pageToken = feed.NextPageToken;
@@ -96,18 +96,129 @@ namespace SyncApplication.Models.GoogleCalendar
 
         public string InsertEvent(CalendarEvent objCalendarEvent)
         {
-            string SyncedEventId = string.Empty;
-            return SyncedEventId;
+            try
+            {
+                string SyncedEventId = Guid.NewGuid().ToString().Replace("-", "");
+
+                var googleEvent = new Event();
+
+                googleEvent.Id = SyncedEventId;
+                googleEvent.Summary = objCalendarEvent.Title;
+                googleEvent.Description = objCalendarEvent.Description;
+                googleEvent.Start = new EventDateTime
+                {
+                    DateTime = objCalendarEvent.StartDate,
+                    //TimeZone = TimeZoneInfo.Local.Id
+                };
+                googleEvent.End = new EventDateTime
+                {
+                    DateTime = objCalendarEvent.EndDate,
+                    //TimeZone = TimeZoneInfo.Local.Id
+                };
+                googleEvent.Location = objCalendarEvent.Location;
+                googleEvent.Status = "confirmed";
+                googleEvent.Locked = false;
+                googleEvent.Attendees = new List<EventAttendee>()
+                {
+                    new EventAttendee
+                    {
+                        Email = objCalendarEvent.AttendeeEmailAddress,
+
+                    }
+                };
+                googleEvent.Reminders = new Event.RemindersData
+                {
+                    UseDefault = false,
+                    Overrides = new[]
+                        {
+                            new EventReminder
+                            {
+                                Method = objCalendarEvent.ReminderType,
+                                Minutes = objCalendarEvent.Reminder
+                            }
+                        }
+                };
+                googleEvent.Visibility = "default";
+                googleEvent.GuestsCanModify = false;
+                googleEvent.GuestsCanInviteOthers = false;
+                googleEvent.GuestsCanSeeOtherGuests = false;
+
+                EventsResource.InsertRequest objInsertRequest = _CalendarService.Events.Insert(googleEvent, "primary");
+                objInsertRequest.SendNotifications = true;
+                Event createdEvent = objInsertRequest.Execute();
+                return SyncedEventId;
+            }
+            catch (Exception ex)
+            {
+                return "error";
+            }
         }
 
-        public bool UpdateEvent(CalendarEvent objCalendarEvent)
+        public bool UpdateEvent(string SyncedEventId, CalendarEvent objCalendarEvent)
         {
-            return true;
+            try
+            {
+                var googleEvent = new Event();
+                //Id = SyncedEventId,
+                googleEvent.Summary = "";
+                googleEvent.Description = "";
+                googleEvent.Start = new EventDateTime
+                {
+                    DateTime = DateTime.Now,
+                    TimeZone = TimeZone.CurrentTimeZone.StandardName
+                };
+                googleEvent.End = new EventDateTime
+                {
+                    DateTime = DateTime.Now,
+                    TimeZone = TimeZone.CurrentTimeZone.StandardName
+                };
+                googleEvent.Location = "";
+                googleEvent.Status = "";
+                googleEvent.Locked = false;
+                googleEvent.Attendees = new List<EventAttendee>()
+                {
+                    new EventAttendee {
+                        Email = ""
+                    }
+                };
+                googleEvent.Reminders = new Event.RemindersData
+                {
+                    UseDefault = false,
+                    Overrides = new[]
+                    {
+                        new EventReminder
+                        {
+                            Method = "Email",
+                            Minutes = 30
+                        }
+                    }
+                };
+
+
+                EventsResource.UpdateRequest objUpdateRequest = _CalendarService.Events.Update(googleEvent, "primary", SyncedEventId);
+                objUpdateRequest.SendNotifications = true;
+                Event updatedEvent = objUpdateRequest.Execute();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
-        public bool DeleteEvent(CalendarEvent objCalendarEvent)
+        public bool DeleteEvent(string SyncedEventId)
         {
-            return true;
+            try
+            {
+                EventsResource.DeleteRequest objDeleteRequest = _CalendarService.Events.Delete("primary", SyncedEventId);
+                objDeleteRequest.SendNotifications = true;
+                string deletedEvent = objDeleteRequest.Execute();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
     }
 }

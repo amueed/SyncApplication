@@ -19,7 +19,7 @@ namespace SyncApplication.Models.OutlookCalendar
         private OutlookCalendarService GetOutlookCalendarServiceObj(string UserEmail)
         {
             UserToken objUserToken = GetUserToken(UserEmail);
-            return new OutlookCalendarService(objUserToken, _AppCredentials);
+            return new OutlookCalendarService(_AppCredentials, objUserToken);
         }
 
         //Get CalendarRepository object
